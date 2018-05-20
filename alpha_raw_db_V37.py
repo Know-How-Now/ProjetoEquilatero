@@ -1,7 +1,7 @@
 # [START LIBRARY IMPORTS] #
-import firebase_parceiro
-from firebase_parceiro import credentials
-from firebase_parceiro import firestore
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
 from google.cloud import firestore as cloudfirestore
 from google.cloud import exceptions as exception
 import string
@@ -9,8 +9,8 @@ import random
 # [END LIBRARY IMPORTS] #
 
 # [START GLOBAL DEF] #
-cred = credentials.Certificate('C:/Usuarios/aluno/Documents/Grupo KHOW/Projeto Equilatero/Alpha/Database/equilatero-parceirosk.json')  #('/Usuarios/lucianomelo/Desktop/equilatero-parceirosk.json')   #('/home/cbmelo/Downloads/equilateroparceiroBeta.json')
-firebase_parceiro.initialize_app(cred)
+cred = credentials.Certificate('/Users/cbmelo/Documents/Projects/CESAR/Primerio_Periodo/Equilatero/Alpha/Database/Raw Database/Equilatero_Raw_Database_serviceAccount.json')  #('/Usuarios/lucianomelo/Desktop/equilatero-parceirosk.json')   #('/home/cbmelo/Downloads/equilateroparceiroBeta.json')
+firebase_admin.initialize_app(cred)
 db = firestore.client()
 transaction = db.transaction()
 batch = db.batch()
