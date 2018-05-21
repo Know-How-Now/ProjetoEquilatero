@@ -1,4 +1,4 @@
-# [START LIBRARY IMPORTS] #
+    # [START LIBRARY IMPORTS] #
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
@@ -62,9 +62,9 @@ class Parceiro(object):
 
 # [START pulseira_DEF] #
 class Pulseira(object):
-    def __init__(self, pulseira_id, usuario_id_atual='', usuario_id_passado='', checkpoints=[0]):
+    def __init__(self, pulseira_id, usuario_id_recente='', usuario_id_passado=[''],):
         self.pulseira_id = pulseira_id
-        self.usuario_id_atual = usuario_id_atual
+        self.usuario_id_recente = usuario_id_recente
         self.usuario_id_passado = usuario_id_passado
         self.checkpoints = checkpoints
 
@@ -72,12 +72,10 @@ class Pulseira(object):
     def from_dict(source):
         # [START_EXCLUDE] #
         pulseira = Pulseira(source['pulseira_id'])
-        if 'usuario_id_atual' in source:
-            pulseira.usuario_id_atual = source['usuario_id_atual']
+        if 'usuario_id_recente' in source:
+            pulseira.usuario_id_recente = source['usuario_id_recente']
         if 'usuario_id_passado' in source:
-            pulseira.usuario_id_passado = source['usuario_id_passado']
-        if 'checkpoints' in source:
-            pulseira.checkpoints = source['checkpoints']
+            pulseira.usuario_id_passado = source['usuarios_passados']
         return pulseira
     # [END_EXCLUDE] #
 
@@ -86,8 +84,8 @@ class Pulseira(object):
         pulseira_dest = {
             'pulseira_id': self.pulseira_id
         }
-        if self.usuario_id_atual:
-            pulseira_dest['usuario_id_atual'] = self.usuario_id_atual
+        if self.usuario_id_recente:
+            pulseira_dest['usuario_id_recente'] = self.usuario_id_recente
         if self.usuario_id_passado:
             pulseira_dest['usuario_id_passado'] = self.usuario_id_passado
         if self.checkpoints:
@@ -96,8 +94,8 @@ class Pulseira(object):
     # [END_EXCLUDE] #
 
     def __repr__(self):
-        return 'Pulseira(pulseira_id={}, usuario_id_atual={} usuario_id_passado={}, checkpoints={})'.format(
-            self.pulseira_id, self.usuario_id_atual, self.usuario_id_passado, self.checkpoints)
+        return 'Pulseira(pulseira_id={}, usuario_id_recente={} usuario_id_passado={}, checkpoints={})'.format(
+            self.pulseira_id, self.usuario_id_recente, self.usuario_id_passado, self.checkpoints)
     # [END pulseira_DEF] #
 
 # [START Region_DEF] #
@@ -231,7 +229,7 @@ def add_sample_parceiro_data():
     # [END OF parceiro DATA SAMPLE]
 
 # [START ADD SAMPLE Pulseira DATA] #
-def add_sample_pulseira_data(): #pulseira_id, usuario_id_atual, usuario_id_passado, checkpoints=[0.0]):
+def add_sample_pulseira_data(): #pulseira_id, usuario_id_recente, usuario_id_passado, checkpoints=[0.0]):
     # [REFERENCE collection (AND/OR document)]
     pulseira_ref = db.collection('pulseiras')
     # [ADD MULTIPLE EXAMPLES FOR Pulseira]
@@ -429,7 +427,7 @@ def get_deficiente_data(collection,order_by):
     if collection == 'pulseiras':
         for doc in docs:
             pulseira = Pulseira.from_dict(doc.to_dict())
-            doc_data = [pulseira.pulseira_id, pulseira.usuario_id_atual, pulseira.usuario_id_passado, pulseira.checkpoints]
+            doc_data = [pulseira.pulseira_id, pulseira.usuario_id_recente, pulseira.usuario_id_passado, pulseira.checkpoints]
             print('{}'.format(doc_data))
     if collection == 'trilhas':
         for doc in docs:
@@ -456,7 +454,7 @@ def get_document_data(collection,document):
         print('{}'.format(doc_data))
     if collection == 'pulseiras':
         pulseira = Pulseira.from_dict(doc.to_dict())
-        doc_data = [pulseira.pulseira_id, pulseira.usuario_id_atual, pulseira.usuario_id_passado, pulseira.checkpoints]
+        doc_data = [pulseira.pulseira_id, pulseira.usuario_id_recente, pulseira.usuario_id_passado, pulseira.checkpoints]
         print('{}'.format(doc_data))
     if collection == 'trilhas':
         trilha = Trilha.from_dict(doc.to_dict())
@@ -489,7 +487,7 @@ def get_collection_data(collection,order_by):
     if collection == 'pulseiras':
         for doc in docs:
             pulseira = Pulseira.from_dict(doc.to_dict())
-            doc_data = [pulseira.pulseira_id, pulseira.usuario_id_atual, pulseira.usuario_id_passado, pulseira.checkpoints]
+            doc_data = [pulseira.pulseira_id, pulseira.usuario_id_recente, pulseira.usuario_id_passado, pulseira.checkpoints]
             print('{}'.format(doc_data))
     if collection == 'trilhas':
         for doc in docs:
@@ -524,7 +522,7 @@ def get_simple_query_collection_data(collection, data, comparative, value):
     if collection == 'pulseiras':
         for doc in docs:
             pulseira = Pulseira.from_dict(doc.to_dict())
-            doc_data = [pulseira.pulseira_id, pulseira.usuario_id_atual, pulseira.usuario_id_passado, pulseira.checkpoints]
+            doc_data = [pulseira.pulseira_id, pulseira.usuario_id_recente, pulseira.usuario_id_passado, pulseira.checkpoints]
             print('{}'.format(doc_data))
     if collection == 'trilhas':
         for doc in docs:
@@ -562,11 +560,11 @@ def get_compound_query_collection_data(collection, data, comparative, value, dat
     if collection == 'pulseiras':
         for doc in docs:
             pulseira = Pulseira.from_dict(doc.to_dict())
-            doc_data = [pulseira.pulseira_id, pulseira.usuario_id_atual, pulseira.usuario_id_passado, pulseira.checkpoints]
+            doc_data = [pulseira.pulseira_id, pulseira.usuario_id_recente, pulseira.usuario_id_passado, pulseira.checkpoints]
             data_set1.append(tuple(doc_data))
         for doc in docs2:
             pulseira = Pulseira.from_dict(doc.to_dict())
-            doc_data = [pulseira.pulseira_id, pulseira.usuario_id_atual, pulseira.usuario_id_passado, pulseira.checkpoints]
+            doc_data = [pulseira.pulseira_id, pulseira.usuario_id_recente, pulseira.usuario_id_passado, pulseira.checkpoints]
             data_set2.append(tuple(doc_data))
     if collection == 'trilhas':
         for doc in docs:
@@ -614,7 +612,7 @@ def get_interval_query_collection_data(collection, data, comparative, value, dat
     if collection == 'pulseiras':
         for doc in docs:
             pulseira = Pulseira.from_dict(doc.to_dict())
-            doc_data = [pulseira.pulseira_id, pulseira.usuario_id_atual, pulseira.usuario_id_passado, pulseira.checkpoints]
+            doc_data = [pulseira.pulseira_id, pulseira.usuario_id_recente, pulseira.usuario_id_passado, pulseira.checkpoints]
             print('{}'.format(doc_data))
     if collection == 'trilhas':
         for doc in docs:
