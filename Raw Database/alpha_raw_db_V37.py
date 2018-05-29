@@ -66,7 +66,6 @@ class Pulseira(object):
         self.pulseira_id = pulseira_id
         self.usuario_id_recente = usuario_id_recente
         self.usuario_id_passado = usuario_id_passado
-        self.checkpoints = checkpoints
 
     @staticmethod
     def from_dict(source):
@@ -88,14 +87,12 @@ class Pulseira(object):
             pulseira_dest['usuario_id_recente'] = self.usuario_id_recente
         if self.usuario_id_passado:
             pulseira_dest['usuario_id_passado'] = self.usuario_id_passado
-        if self.checkpoints:
-            pulseira_dest['checkpoints'] = self.checkpoints
         return pulseira_dest
     # [END_EXCLUDE] #
 
     def __repr__(self):
-        return 'Pulseira(pulseira_id={}, usuario_id_recente={} usuario_id_passado={}, checkpoints={})'.format(
-            self.pulseira_id, self.usuario_id_recente, self.usuario_id_passado, self.checkpoints)
+        return 'Pulseira(pulseira_id={}, usuario_id_recente={} usuario_id_passado={})'.format(
+            self.pulseira_id, self.usuario_id_recente, self.usuario_id_passado)
     # [END pulseira_DEF] #
 
 # [START Region_DEF] #
