@@ -1,23 +1,30 @@
 import faker
 import random
 import string
-
+import Layer1_raw_data as raw_db
 fake = faker.Faker()
-
 
 # [SPONSOR DATA] #
 #sponsor_id = range(10001,20000) // ex.: 12345
     #name, type_of, network=['']):
 
-def sample_sponsor():
-    id = random.randint(10001,20000)
-    name = fake.company()
-    network = []
-    for i in range(2):
-        network.append(fake.name())
-    print(network)
-sample_sponsor()
+def sample_sponsor(sample_data_ammount):
+    data_created = 0
+    while data_created < sample_data_ammount:
+        id = random.randint(10001,20000)
+        raw_db.check_data_existance('Sponsors',id)
+        name = fake.company()
+        type_of = 
+        network = []
+        for i in range(2):
+            network.append(fake.name())
+        sponsor_ref.document(id).set(
+            Sponsor(name,type_of,network).to_dict())
+        data_created = data_created + 1
+    print('Succesfully sent sample data to Database!')
 
+pulseira_ref.document('200000006').set(
+        Pulseira('200000006', '500000001' '500000006', [100, 200, 400]).to_dict())
 #------------------------
 
 # [TRACK DATA] #
@@ -66,3 +73,7 @@ sample_sponsor()
     #timestamp=[''], ammount=[0], allocated_to=[''], ebtida=[0]):   
 
 #def sample_investment():
+
+#-----------------------------
+
+sample_sponsor(3)
