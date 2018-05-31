@@ -250,3 +250,17 @@ class Investment(object): #investment_id = sponsor_id + item_id // ex.: 10001281
         return 'Investment(timestamp={}, ammount={}, allocated_to={}, ebtida={})'.format(
             self.timestamp, self.ammount, self.allocated_to, self.ebtida)
     # [END: INVESTMENT DESCRIPTION] #
+    
+        # [START check IF Usuario EXISTS] #
+def check_data_existance(collection, document):
+    # [REFERENCE collection (AND/OR document)]
+    doc_ref = db.collection(collection).document(document)
+    # [CHECK IF REFERENCE EXISTS]
+    try:
+        doc = doc_ref.get()
+        print('Document exits: {}'.format(doc.to_dict()))
+        return doc.to_dict()
+    except exception.NotFound:
+        #print('No such document!')
+        return False
+    # [END OF check] #
