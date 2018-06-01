@@ -11,7 +11,7 @@ import random
 # [END: LIBRARY IMPORTS] #
 
 # [START: GLOBAL VARIABLES] #
-cred = credentials.Certificate('/Users/cbmelo/Documents/Projects/CESAR/Primerio_Periodo/Equilatero/Alpha/Database/Raw Database/Equilatero_Raw_Database_serviceAccount.json')  #('/Usuarios/lucianomelo/Desktop/equilatero-parceirosk.json')   #('/home/cbmelo/Downloads/equilateroparceiroBeta.json')
+cred = credentials.Certificate('C:/Users/aluno/Documents/KHOW/ProjetoEquilatero-master/Equilatero_Raw_Database_serviceAccount.json')  #('/Usuarios/lucianomelo/Desktop/equilatero-parceirosk.json')   #('/home/cbmelo/Downloads/equilateroparceiroBeta.json')
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 transaction = db.transaction()
@@ -258,8 +258,9 @@ def check_data_existance(collection, document):
     # [CHECK IF REFERENCE EXISTS]
     try:
         doc = doc_ref.get()
-        print('Document exits: {}'.format(doc.to_dict()))
-        return doc.to_dict()
+        #print('Document exits: {}'.format(doc.to_dict()))
+        #return doc.to_dict()
+        return True
     except exception.NotFound:
         #print('No such document!')
         return False
