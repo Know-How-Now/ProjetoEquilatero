@@ -3,7 +3,7 @@ import faker
 import random
 import pandas as pd
 from tqdm import tqdm
-import ddd_estados_brasileiros as ddd_df
+import custom_dictionaries as c_dict
 
 fake = faker.Faker()
 
@@ -43,14 +43,14 @@ def sample_track_data(sample_data_ammount):
     data_created = 0
     pbar = tqdm(total=sample_data_ammount)
     while data_created < sample_data_ammount:
-        id = '2{}{}'.format(random.sample(ddd_list, 1), random.randint(1,99)).translate({ord(char): None for char in "'[]'"})
+        id = '2{}{}'.format(random.sample(c_dict.ddd_list, 1), random.randint(1,99)).translate({ord(char): None for char in "'[]'"})
         if raw_db.check_data_existance('Track',id) == True:
             continue
         else:
             length = random.randint(2000,8100,100)
             hashtags = []
             for i in range(5):
-                hashtags.append(random.sample(oque, quanto))
+                hashtags.append(random.sample()) ###edit this to add c_dict data
             track_ref = raw_db.db.collection('Tracks')
             track_ref.document(id).set(
                 raw_db.Sponsor(name,length,hashtags).to_dict())
