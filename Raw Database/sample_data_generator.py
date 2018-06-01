@@ -1,37 +1,63 @@
+import Layer1_raw_data as raw_db
 import faker
 import random
-import string
-import Layer1_raw_data as raw_db
+import pandas as pd
+from tqdm import tqdm
+import ddd_estados_brasileiros as ddd_df
+
 fake = faker.Faker()
 
 # [SPONSOR DATA] #
 #sponsor_id = range(10001,20000) // ex.: 12345
     #name, type_of, network=['']):
 
-def sample_sponsor(sample_data_ammount):
+def sample_sponsor_data(sample_data_ammount):
+    print('Creating sample Sponsor data...')
     data_created = 0
+    pbar = tqdm(total=sample_data_ammount)
     while data_created < sample_data_ammount:
-        id = random.randint(10001,20000)
-        raw_db.check_data_existance('Sponsors',id)
-        name = fake.company()
-        type_of = 
-        network = []
-        for i in range(2):
-            network.append(fake.name())
-        sponsor_ref.document(id).set(
-            Sponsor(name,type_of,network).to_dict())
-        data_created = data_created + 1
-    print('Succesfully sent sample data to Database!')
+        id = str(random.randint(10001,20000))
+        if raw_db.check_data_existance('Sponsors',id) == True:
+            continue
+        else:
+            name = fake.company()
+            type_of = fake.job()
+            network = []
+            for i in range(2):
+                network.append(fake.ascii_company_email())
+            sponsor_ref = raw_db.db.collection('Sponsors')
+            sponsor_ref.document(id).set(
+                raw_db.Sponsor(name,type_of,network).to_dict())
+            data_created = data_created + 1
+            pbar.update(+1)
+    print('\nSuccesfully sent all {} Sponsor data samples to the Database!'.format(sample_data_ammount))
 
-pulseira_ref.document('200000006').set(
-        Pulseira('200000006', '500000001' '500000006', [100, 200, 400]).to_dict())
 #------------------------
 
 # [TRACK DATA] #
 #track_id = 2 + ddd + num_trilha // ex.: 28101 (trilha, regiao 81, numero 01)
     #name, length=0, hashtags=['']):
 
-#def sample_track():
+def sample_track_data(sample_data_ammount):
+    print('Creating sample Track data...')
+    data_created = 0
+    pbar = tqdm(total=sample_data_ammount)
+    while data_created < sample_data_ammount:
+        id = '2{}{}'.format(random.sample(ddd_list, 1), random.randint(1,99)).translate({ord(char): None for char in "'[]'"})
+        if raw_db.check_data_existance('Track',id) == True:
+            continue
+        else:
+            length = random.randint(2000,8100,100)
+            hashtags = []
+            for i in range(5):
+                hashtags.append(random.sample(oque, quanto))
+            track_ref = raw_db.db.collection('Tracks')
+            track_ref.document(id).set(
+                raw_db.Sponsor(name,length,hashtags).to_dict())
+            data_created = data_created + 1
+            pbar.update(+1)
+    print('\nSuccesfully sent all {} Track data samples to the Database!'.format(sample_data_ammount))
+
 
 #----------------------------
 
@@ -76,4 +102,4 @@ pulseira_ref.document('200000006').set(
 
 #-----------------------------
 
-sample_sponsor(3)
+sample_sponsor_data(100)
