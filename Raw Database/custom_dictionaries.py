@@ -16,15 +16,23 @@ ddd_dict = dict(ddd_zipped)
 
 ddd_data_df = pd.DataFrame(ddd_dict)
 
-ddd_data_df = pd.DataFrame(ddd_dict)
-
 def ddd_df_read(label_index):
     for i, row in ddd_data_df.iterrows():
         print(row[label_index])
 
 # ----------[Track Hashtags]---------- #
-track_hashtags_string = 'Poucos obstaculos,Muitos obstaculos,Poucos obstaculos,Desnivel positivo,Desnivel negativo,Mata Aberta,Mata Fechada,Piso Regular,Piso Irregular,Riachos,Alta insolacao,Baixa insolacao,Cachoeira,Riachos,Rios,Escaladas'
+track_hashtags_string = 'Poucos obstaculos,Muitos obstaculos,Desnivel positivo,Desnivel negativo,Mata Aberta,Mata Fechada,Piso Regular,Piso Irregular,Baixa insolacao,Alta insolacao,Cachoeira,Riachos,Escaladas,Descidas'
 track_hashtags_list = track_hashtags_string.split(',')
 
 track_traits_1_list = track_hashtags_list[0::2]
 track_traits_2_list = track_hashtags_list[1::2]
+
+track_labels = ['Trait 1','Trait 2']
+track_columns = [track_traits_1_list, track_traits_2_list]
+
+track_zipped = list(zip(track_labels, track_columns))
+track_dict = dict(track_zipped)
+
+track_df = pd.DataFrame(track_dict)
+
+track_trait_choices = list(zip(track_traits_1_list,track_traits_2_list))
