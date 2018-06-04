@@ -43,17 +43,23 @@ def sample_track_data(sample_data_ammount):
     data_created = 0
     pbar = tqdm(total=sample_data_ammount)
     while data_created < sample_data_ammount:
-        id = '2{}{}'.format(random.sample(c_dict.ddd_list, 1), random.randint(1,99)).translate({ord(char): None for char in "'[]'"})
+        id = '2{}{}'.format(random.choice(c_dict.ddd_list), random.randint(1,99)).translate({ord(char): None for char in "'[]'"})
         if raw_db.check_data_existance('Track',id) == True:
             continue
         else:
-            length = random.randint(2000,8100,100)
+            name = fake.street_name()
+            length = random.randint(2000,10000)
             hashtags = []
-            for i in range(5):
-                hashtags.append(random.sample()) ###edit this to add c_dict data
+            while len(hashtags) < len(c_dict.track_trait_choices):
+                random_trait = random.choice(c_dict.track_trait_choices)
+                random_characteristic = random.choice(random_trait) 
+                if random_characteristic in hashtags:
+                    continue
+                else:
+                    hashtags.append(random_characteristic)
             track_ref = raw_db.db.collection('Tracks')
             track_ref.document(id).set(
-                raw_db.Sponsor(name,length,hashtags).to_dict())
+                raw_db.Track(name,length,hashtags).to_dict())
             data_created = data_created + 1
             pbar.update(+1)
     print('\nSuccesfully sent all {} Track data samples to the Database!'.format(sample_data_ammount))
@@ -102,4 +108,5 @@ def sample_track_data(sample_data_ammount):
 
 #-----------------------------
 
-sample_sponsor_data(100)
+#sample_sponsor_data(100)
+#sample_track_data(50)
