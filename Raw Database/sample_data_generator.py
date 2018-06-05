@@ -1,9 +1,9 @@
-import Layer1_raw_data as raw_db
 import faker
 import random
 import pandas as pd
 from tqdm import tqdm
 import custom_dictionaries as c_dict
+import Layer1_raw_data as raw_db
 
 fake = faker.Faker()
 
@@ -64,14 +64,38 @@ def sample_track_data(sample_data_ammount):
             pbar.update(+1)
     print('\nSuccesfully sent all {} Track data samples to the Database!'.format(sample_data_ammount))
 
-
 #----------------------------
 
 # [SENSOR DATA] #
 #sensor_id = track_id + sensor_num // ex.: 28101+001
     #timestamp, position=0, angle=0, humidity=[0], temperature=[0]):
 
-#def sample_sensor():
+def sample_sensor_data(sample_data_ammount):
+    print('Creating sample Sensor data...')
+    data_created = 0
+    pbar = tqdm(total=sample_data_ammount)
+    while data_created < sample_data_ammount:
+        random_track_id = random.choice(raw_db.get_collection_docs('Tracks'))
+        id = '{}{}'.format(random_track_id, random.randint(101,999)).translate({ord(char): None for char in "'[]'"})
+        if raw_db.check_data_existance('Sensor',id) == True:
+            continue
+        else:
+            for i in range(0,10):
+                timestamp = fake.date_time_between(start_date='-1y', end_date='now')
+                max_position = raw_db.get_track_length('Tracks',random_track_id)
+                position = random.randint(max_position/4,max_position) #non-interger?? erro - fix
+                angle = random.vonmisesvariate()
+                humidity = [random.randint(0,100)]
+                temperature = [random.randint(15,40)]
+                sensor_ref = raw_db.db.collection('Sensors')
+                sensor_ref.document(id).set(
+                    raw_db.Sensor(timestamp,position,angle,humidity,temperature).to_dict())
+                i = i + 1
+            data_created = data_created + 1
+            pbar.update(+1)
+    print('\nSuccesfully sent all {} Sensor data samples to the Database!'.format(sample_data_ammount))
+
+sample_sensor_data(5)
 
 #----------------------------
 
