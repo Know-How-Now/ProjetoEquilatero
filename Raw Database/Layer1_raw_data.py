@@ -11,7 +11,7 @@ import random
 # [END: LIBRARY IMPORTS] #
 
 # [START: GLOBAL VARIABLES] #
-cred = credentials.Certificate('C:/Users/aluno/Documents/KHOW/ProjetoEquilatero-master/Equilatero_Raw_Database_serviceAccount.json')  #('/Usuarios/lucianomelo/Desktop/equilatero-parceirosk.json')   #('/home/cbmelo/Downloads/equilateroparceiroBeta.json')
+cred = credentials.Certificate('C:/Users/aluno/Documents/GitHub Repositories/ProjetoEquilatero-master/Equilatero_Raw_Database_serviceAccount.json')  #('/Usuarios/lucianomelo/Desktop/equilatero-parceirosk.json')   #('/home/cbmelo/Downloads/equilateroparceiroBeta.json')
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 transaction = db.transaction()
@@ -55,7 +55,7 @@ class Track(object): #track_id = 2 + ddd + num_trilha // ex.: 28101 (trilha, reg
 
     @staticmethod
     def from_dict(source):
-        track = Track(source['nome'], source['length'])
+        track = Track(source['name'], source['length'])
         if 'hashtags' in source:
             track.hashtags = source['hashtags']
         return track
@@ -251,11 +251,9 @@ class Investment(object): #investment_id = sponsor_id + item_id // ex.: 10001281
             self.timestamp, self.ammount, self.allocated_to, self.ebtida)
     # [END: INVESTMENT DESCRIPTION] #
     
-        # [START check IF Usuario EXISTS] #
+# [START check IF Usuario EXISTS] #
 def check_data_existance(collection, document):
-    # [REFERENCE collection (AND/OR document)]
     doc_ref = db.collection(collection).document(document)
-    # [CHECK IF REFERENCE EXISTS]
     try:
         doc = doc_ref.get()
         #print('Document exits: {}'.format(doc.to_dict()))
@@ -265,3 +263,22 @@ def check_data_existance(collection, document):
         #print('No such document!')
         return False
     # [END OF check] #
+
+# [START .get ALL DATA IN colletion] #
+def get_collection_docs(collection):
+    docs = db.collection(collection).get()
+    docs_id = []
+    for doc in docs:
+        docs_id.append(doc.id)
+    return docs_id
+    #[END of function]
+
+def get_track_length(collection,document):
+    # [REFERENCE collection (AND/OR document)]
+    doc_ref = db.collection(collection).document(document)
+    doc = doc_ref.get()
+    if collection == 'Tracks':
+        track = Track.from_dict(doc.to_dict())
+        return track.length
+
+#get_track_length('Tracks','21753')
