@@ -1,13 +1,16 @@
 ##################------------------- LAYER 1: DESCRIPTIVE DATA --------------------####################
 
+import random
+import string
+import faker
+fake = faker.Faker()
+
 # [START: LIBRARY IMPORTS] #
 import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
-from google.cloud import firestore as cloudfirestore
+from firebase_admin import credentials, firestore
 from google.cloud import exceptions as exception
-import string
-import random
+from google.cloud import firestore as cloudfirestore
+
 # [END: LIBRARY IMPORTS] #
 
 # [START: GLOBAL VARIABLES] #
@@ -74,9 +77,8 @@ class Track(object): #track_id = 2 + ddd + num_trilha // ex.: 28101 (trilha, reg
             self.name, self.length, self.hashtags)
     # [END: TRACK DESCRIPTION] #
 
-# [START: SENSOR DESCRIPTION] #
 class Sensor(object): #sensor_id = track_id + sensor_num // ex.: 28101+001
-    def __init__(self, timestamp, position=0, angle=0, humidity=[0], temperature=[0]):
+    def __init__(self, timestamp,position=0, angle=0, humidity=[0], temperature=[0]):
         self.timestamp = timestamp
         self.position = position
         self.angle = angle
@@ -107,6 +109,26 @@ class Sensor(object): #sensor_id = track_id + sensor_num // ex.: 28101+001
     def __repr__(self):
         return 'Sensor(timestamp={}, position={}, angle={}, humidity={}, temperature={})'.format(
             self.timestamp, self.position, self.angle, self.humidity, self.temperature)
+    # [END: SENSOR DESCRIPTION] #
+
+class Timestamp(Sensor): 
+    def __init__(self, timestamp=['']):
+        self.timestamp = timestamp
+
+    @staticmethod
+    def from_dict(source):
+        timestamp = Timestamp(source['timestamp'])
+        return timestamp
+
+    def to_dict(self):
+        timestamp_dest = {
+            self.timestamp : Sensor.__init__(self,'Timestamp')
+        }
+        return timestamp_dest
+
+    def __repr__(self):
+        return 'Timestamp(timestamp={})'.format(
+            self.timestamp)
     # [END: SENSOR DESCRIPTION] #
 
 # [START: USER PROFILE -- LEFT WRIST] # 
@@ -270,7 +292,7 @@ def get_collection_docs(collection):
     docs_id = []
     for doc in docs:
         docs_id.append(doc.id)
-    return docs_id
+        return docs_id
     #[END of function]
 
 def get_track_length(collection,document):
@@ -280,5 +302,3 @@ def get_track_length(collection,document):
     if collection == 'Tracks':
         track = Track.from_dict(doc.to_dict())
         return track.length
-
-#get_track_length('Tracks','21753')
