@@ -1,11 +1,14 @@
 import faker
 import random
+import datetime
 import pandas as pd
 from tqdm import tqdm
 import custom_dictionaries as c_dict
 import Layer1_raw_data as raw_db
 
 fake = faker.Faker()
+#db_timestamp = firebase_admin.firestore.FieldValue.serverTimestamp()
+#firestore.SERVER_TIMESTAMP
 
 # [SPONSOR DATA] #
 #sponsor_id = range(10001,20000) // ex.: 12345
@@ -80,19 +83,24 @@ def sample_sensor_data(sample_data_ammount):
         if raw_db.check_data_existance('Sensor',id) == True:
             continue
         else:
-            for i in range(0,10):
+            for i in range(0,1):
                 timestamp = fake.date_time_between(start_date='-1y', end_date='now')
+                timestamp_str = str(timestamp)
                 max_position = raw_db.get_track_length('Tracks',random_track_id)
-                position = random.randint(max_position/4,max_position) #non-interger?? erro - fix
-                angle = random.vonmisesvariate()
+                max_position_int = int(max_position)
+                position = random.randrange(2000,max_position_int) #non-interger?? erro - fix
+                angle = random.vonmisesvariate(180,0)*(180/3.14)
                 humidity = [random.randint(0,100)]
                 temperature = [random.randint(15,40)]
-                sensor_ref = raw_db.db.collection('Sensors')
-                sensor_ref.document(id).set(
-                    raw_db.Sensor(timestamp,position,angle,humidity,temperature).to_dict())
+
+                data = raw_db.Sensor(timestamp,position,angle,humidity,temperature).to_dict()
+
+                sensor_ref = raw_db.db.collection('Sensors').document(id)
+                #sensor_timestamp_ref = sensor_ref.collection('Date').document(timestamp_str)
+                sensor_ref.set(raw_db.Timestamp(timestamp_str).to_dict())
+                pbar.update(+.1)
                 i = i + 1
             data_created = data_created + 1
-            pbar.update(+1)
     print('\nSuccesfully sent all {} Sensor data samples to the Database!'.format(sample_data_ammount))
 
 sample_sensor_data(5)
