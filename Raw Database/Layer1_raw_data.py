@@ -124,44 +124,44 @@ class Timestamp(object): ##broken
 
 # [START: USER PROFILE -- LEFT WRIST] # 
 class Profile(object): #profile_id = 5 + deficiência {range(0,6)} + sensor_id // ex.: 50+28101001 or 5628101001
-    def __init__(self, gender, age=0, group_size=0, control_id=0):
-        self.gender = gender
-        self.age = age
+    def __init__(self, sex, birthdate=0, group_size=0, control_id=0):
+        self.sex = sex
+        self.birthdate = birthdate
         self.group_size = group_size
         self.control_id = control_id
 
     @staticmethod
     def from_dict(source):
-        profile = Profile(source['gender'], source['age'], source['group_size'], source['control_id'])
+        profile = Profile(source['sex'], source['birthdate'], source['group_size'], source['control_id'])
         return profile
 
     def to_dict(self):
         profile_dest = {
-            'gender': self.gender,
-            'age': self.age,
+            'sex': self.sex,
+            'birthdate': self.birthdate,
             'group_size': self.group_size,
             'control_id': self.control_id
         }
         return profile_dest
 
     def __repr__(self):
-        return 'Profile(gender={}, age={}, group_size={}, control_id={})'.format(
-            self.gender, self.age, self.group_size, self.control_id)
+        return 'Profile(sex={}, birthdate={}, group_size={}, control_id={})'.format(
+            self.sex, self.birthdate, self.group_size, self.control_id)
     # [END: USER PROFILE -- LEFT WRIST] #
 
 # [START: USER DESCRIPTION] # 
 class User(object): #user_id = range(60 ++)
-    def __init__(self, name, gender, age=0, contact=''):
+    def __init__(self, name, sex, birthdate='', contact=''):
         self.name = name
-        self.gender = gender
-        self.age = age
+        self.sex = sex
+        self.birthdate = birthdate
         self.contact = contact
 
     @staticmethod
     def from_dict(source):
-        user = User(source['name'], source['gender'])
-        if 'age' in source:
-            user.name = source['age']
+        user = User(source['name'], source['sex'])
+        if 'birthdate' in source:
+            user.birthdate = source['birthdate']
         if 'contact' in source:
             user.contact = source['contact']
         return user
@@ -169,25 +169,24 @@ class User(object): #user_id = range(60 ++)
     def to_dict(self):
         user_dest = {
             'name': self.name,
-            'gender': self.gender
+            'sex': self.sex
         }
-        if self.age:
-            user_dest['age']
+        if self.birthdate:
+            user_dest['birthdate'] = self.birthdate
         if self.contact:
-            user_dest['contact']
+            user_dest['contact'] = self.contact
         return user_dest
 
     def __repr__(self):
-        return 'User(name={}, gender={}, age={}, contact={})'.format(
-            self.name, self.gender, self.age, self.contact)
+        return 'User(name={}, sex={}, birthdate={}, contact={})'.format(
+            self.name, self.sex, self.birthdate, self.contact)
     # [END: USER DESCRIPTION] #
 
 # [START: GAMIFICATION PROFILE -- RIGHT WRIST] #
 class Gamification(object): #gamification_id = user_id + sensor_id // ex.: 60+28101001 or 1000+28101001, or 9999+28101001
-    def __init__(self, title, experience=0, group_size=[0], milestones=[''], achievements=[''], control_id=[0]):
+    def __init__(self, title, experience=0, milestones=[''], achievements=[''], control_id=[0]):
         self.title = title
         self.experience = experience
-        self.group_size = group_size
         self.milestones = milestones
         self.achievements = achievements
         self.control_id = control_id
@@ -197,8 +196,6 @@ class Gamification(object): #gamification_id = user_id + sensor_id // ex.: 60+28
         gamification = Gamification(source['title'])
         if 'experience' in source:
             gamification.experience = source['experience']
-        if 'group_size' in source:
-            gamification.group_size = source['group_size']
         if 'milestones' in source:
             gamification.milestones = source['milestones']
         if 'checkpoints' in source:
@@ -213,8 +210,6 @@ class Gamification(object): #gamification_id = user_id + sensor_id // ex.: 60+28
         }
         if self.experience:
             gamification_dest['experience'] = self.experience
-        if self.group_size:
-            gamification_dest['group_size'] = self.group_size
         if self.milestones:
             gamification_dest['milestones'] = self.milestones
         if self.achievements:
@@ -224,8 +219,8 @@ class Gamification(object): #gamification_id = user_id + sensor_id // ex.: 60+28
         return gamification_dest
 
     def __repr__(self):
-        return 'Gamification(title={}, experience={}, group_size={} milestones={}, achievements={}, control_id={})'.format(
-            self.title, self.experience, self.group_size, self.milestones, self.achievements, self.control_id)
+        return 'Gamification(title={}, experience={}, milestones={}, achievements={}, control_id={})'.format(
+            self.title, self.experience, self.milestones, self.achievements, self.control_id)
     # [END: GAMIFICATION PROFILE -- RIGHT WRIST] #
 
 # [START: INVESTMENT DESCRIPTION] #
@@ -283,7 +278,7 @@ def get_collection_docs(collection):
     docs_id = []
     for doc in docs:
         docs_id.append(doc.id)
-        return docs_id
+    return docs_id
     #[END of function]
 
 def get_track_length(collection,document):
@@ -293,4 +288,4 @@ def get_track_length(collection,document):
     if collection == 'Tracks':
         track = Track.from_dict(doc.to_dict())
         return track.length
-    # [END: of function] #
+    # [END: SPONSOR DESCRIPTION] #
