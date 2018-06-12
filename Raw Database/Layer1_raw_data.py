@@ -3,11 +3,13 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from google.cloud import exceptions as exception
 from google.cloud import firestore as cloudfirestore
-
+from faker import Faker
+fake = Faker()
 # [END: LIBRARY IMPORTS] #
 
 # [START: GLOBAL VARIABLES] #
-cred = credentials.Certificate('C:/Users/aluno/Documents/GitHub Repositories/ProjetoEquilatero-master/Equilatero_Raw_Database_serviceAccount.json')  #('/Usuarios/lucianomelo/Desktop/equilatero-parceirosk.json')   #('/home/cbmelo/Downloads/equilateroparceiroBeta.json')
+cred = credentials.Certificate('/Users/cbmelo/Documents/Projects/GitHub Repositories/ProjetoEquilatero/Equilatero_Raw_Database_serviceAccount.json')
+#cred = credentials.Certificate('C:/Users/aluno/Documents/GitHub Repositories/ProjetoEquilatero-master/Equilatero_Raw_Database_serviceAccount.json')
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 transaction = db.transaction()
@@ -16,14 +18,15 @@ batch = db.batch()
 
 # [START: SPONSOR DESCRIPTION] #
 class Sponsor(object): #sponsor_id = range(10001,20000) // ex.: 12345
-    def __init__(self, name, type_of, network=['']):
+    def __init__(self, name, type_of, network=[''], **kwargs):
         self.name = name 
         self.type_of = type_of
         self.network = network 
+        self.__dict__.update(kwargs)
 
     @staticmethod
     def from_dict(source):
-        sponsor = (source['name'], source['type_of'], source)
+        sponsor = Sponsor(source['name'], source['type_of'])
         if 'network' in source: 
             sponsor.network = source['network']
         return sponsor
@@ -44,10 +47,11 @@ class Sponsor(object): #sponsor_id = range(10001,20000) // ex.: 12345
 
 # [START: TRACK DESCRIPTION] #
 class Track(object): #track_id = 2 + ddd + num_trilha // ex.: 28101 (trilha, regiao 81, numero 01)
-    def __init__(self, name, length=0, hashtags=['']):
+    def __init__(self, name, length=0, hashtags=[''], **kwargs):
         self.name = name
         self.length = length
         self.hashtags = hashtags
+        self.__dict__.update(kwargs)
 
     @staticmethod
     def from_dict(source):
@@ -71,11 +75,12 @@ class Track(object): #track_id = 2 + ddd + num_trilha // ex.: 28101 (trilha, reg
     # [END: TRACK DESCRIPTION] #
 
 class Sensor(object): #sensor_id = track_id + sensor_num // ex.: 28101+001
-    def __init__(self, position=0, angle=0, humidity=[0], temperature=[0]):
+    def __init__(self, position=0, angle=0, humidity=0, temperature=0, **kwargs):
         self.position = position
         self.angle = angle
         self.humidity = humidity
         self.temperature = temperature
+        self.__dict__.update(kwargs)
 
     @staticmethod
     def from_dict(source):
@@ -102,33 +107,14 @@ class Sensor(object): #sensor_id = track_id + sensor_num // ex.: 28101+001
             self.position, self.angle, self.humidity, self.temperature)
     # [END: SENSOR DESCRIPTION] #
 
-class Timestamp(object): ##broken
-    def __init__(self, timestamp=[]):
-        self.timestamp = Sensor.__init__(self, position=0, angle=0, humidity=0, temperature=0)
-    
-    @staticmethod
-    def from_dict(source):
-        timestamp = Timestamp(source['timestamp'])
-        return timestamp
-
-    def to_dict(self):
-        timestamp_dest = {
-            self.timestamp : Sensor.to_dict(self),
-        }
-        return timestamp_dest
-
-    def __repr__(self):
-        return 'Timestamp(timestamp={})'.format(
-            self.timestamp)
-    # [END: SENSOR DESCRIPTION] #
-
 # [START: USER PROFILE -- LEFT WRIST] # 
 class Profile(object): #profile_id = 5 + deficiência {range(0,6)} + sensor_id // ex.: 50+28101001 or 5628101001
-    def __init__(self, sex, birthdate=0, group_size=0, control_id=0):
+    def __init__(self, sex, birthdate=0, group_size=0, control_id=0, **kwargs):
         self.sex = sex
         self.birthdate = birthdate
         self.group_size = group_size
         self.control_id = control_id
+        self.__dict__.update(kwargs)
 
     @staticmethod
     def from_dict(source):
@@ -151,11 +137,12 @@ class Profile(object): #profile_id = 5 + deficiência {range(0,6)} + sensor_id /
 
 # [START: USER DESCRIPTION] # 
 class User(object): #user_id = range(60 ++)
-    def __init__(self, name, sex, birthdate='', contact=''):
+    def __init__(self, name, sex, birthdate='', contact='', **kwargs):
         self.name = name
         self.sex = sex
         self.birthdate = birthdate
         self.contact = contact
+        self.__dict__.update(kwargs)
 
     @staticmethod
     def from_dict(source):
@@ -184,12 +171,13 @@ class User(object): #user_id = range(60 ++)
 
 # [START: GAMIFICATION PROFILE -- RIGHT WRIST] #
 class Gamification(object): #gamification_id = user_id + sensor_id // ex.: 60+28101001 or 1000+28101001, or 9999+28101001
-    def __init__(self, title, experience=0, milestones=[''], achievements=[''], control_id=[0]):
+    def __init__(self, title, experience=0, milestones=[''], achievements=[''], control_id=[0], **kwargs):
         self.title = title
         self.experience = experience
         self.milestones = milestones
         self.achievements = achievements
         self.control_id = control_id
+        self.__dict__.update(kwargs)
 
     @staticmethod
     def from_dict(source):
@@ -225,17 +213,15 @@ class Gamification(object): #gamification_id = user_id + sensor_id // ex.: 60+28
 
 # [START: INVESTMENT DESCRIPTION] #
 class Investment(object): #investment_id = sponsor_id + item_id // ex.: 1000128101 ou 1000140001
-    def __init__(self, timestamp=[''], ammount=[0], allocated_to=[''], ebtida=[0]):
-        self.timestamp = timestamp
+    def __init__(self, ammount=0, allocated_to=[''], ebtida=[0], **kwargs):
         self.ammount = ammount
         self.allocated_to = allocated_to
         self.ebtida = ebtida
+        self.__dict__.update(kwargs)
 
     @staticmethod
     def from_dict(source):
-        investment = Investment(source['timestamp'])
-        if 'ammount' in source: 
-            investment.ammount = source['ammount']
+        investment = Investment(source['ammount'])
         if 'allocated_to' in source:
             investment.allocated_to = source['allocated_to']
         if 'ebtida' in source:
@@ -244,21 +230,46 @@ class Investment(object): #investment_id = sponsor_id + item_id // ex.: 10001281
 
     def to_dict(self):
         investment_dest = {
-            'timestamp': self.timestamp
+            'ammount': self.ammount
         }
-        if self.ammount:
-            investment_dest['ammount']
         if self.allocated_to:
-            investment_dest['allocated_to']
+            investment_dest['allocated_to'] = self.allocated_to
         if self.ebtida:
-            investment_dest['ebtida']
+            investment_dest['ebtida'] = self.ebtida
         return investment_dest
 
     def __repr__(self):
-        return 'Investment(timestamp={}, ammount={}, allocated_to={}, ebtida={})'.format(
-            self.timestamp, self.ammount, self.allocated_to, self.ebtida)
+        return 'Investment(ammount={}, allocated_to={}, ebtida={})'.format(
+            self.ammount, self.allocated_to, self.ebtida)
     # [END: INVESTMENT DESCRIPTION] #
+
+class Timestamp(object):
+    def __init__(self, my_class=object):
+        self.timestamp = str(fake.date_time_between(start_date='-1y', end_date='-1m'))
+        self.my_class = my_class
+
+    @staticmethod
+    def from_dict(source):
+        timestamp = Timestamp()
+        if 'my_class' in source:
+            timestamp.my_class = source['my_class']
+        return timestamp
     
+    def to_dict(self):
+        timestamp_dest = {
+            self.timestamp : self.my_class,
+        }
+        return timestamp_dest
+
+    def __iter__(self):
+        for key, value in self.my_class.items():
+            yield key, value
+        
+    def __repr__(self):
+        return '{}'.format(self.my_class)
+    # [END: SENSOR DESCRIPTION] #
+
+
 # [START check IF Usuario EXISTS] #
 def check_data_existance(collection, document):
     doc_ref = db.collection(collection).document(document)
