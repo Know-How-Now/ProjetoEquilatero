@@ -172,30 +172,74 @@ def sample_gamification_data(sample_data_ammount):
 
 # [INVESTMENT DATA] #
 #investment_id = sponsor_id + item_id // ex.: 1000128101 ou 1000140001
-    #timestamp=[''], ammount=[0], allocated_to=[''], ebtida=[0]):   
+    #ammount=0, allocated_to=[''], ebtida=[0]):   
 def sample_investment_data(sample_data_ammount):
     print('Creating Investment data...')
     data_created = 0
     pbar = tqdm(total=sample_data_ammount)
     while data_created < sample_data_ammount:
-        # IN PROGRESSSS
-        random_sponsor_id = 1 #random.choice(raw_db.get_collection_docs('Users'))
-        random_item_id = 1 #random.choice(raw_db.get_collection_docs('Sensors'))
-        id = '{}{}'.format(random_user_id, random_sensor_id)
+        random_sponsor_id = random.choice(raw_db.get_collection_docs('Sponsors'))
+        random_item_id = random.choice([random.choice(raw_db.get_collection_docs('Tracks')), random.choice(raw_db.get_collection_docs('Sensors')), random.randint(10001,99999)]) # add func to get control ids # add func to get control ids
+        id = '{}{}'.format(random_sponsor_id, random_item_id)
         if raw_db.check_data_existance('Investments',id) == True:
             continue
         else:
-            ammount = 1 ###############
-            allocated_to = 1 #############
-            ebtida = 1 ####################
+            ammount = random.randint(2001,10000)
+            allocated_to = fake.words(6, ext_word_list=None) #create dict;
+            k = random.random()
+            ebtida = ammount + (ammount*k)
             investment_ref = raw_db.db.collection('Investments').document(id)
-            investment_ref.set(raw_db.Gamification(ammount,allocated_to,ebtida).to_dict())
+            investment_ref.set(raw_db.Investment(ammount,allocated_to,ebtida).to_dict())
             pbar.update(+1)
             data_created = data_created + 1
     print('\nSuccesfully sent all {} Investment data samples to the Database!'.format(sample_data_ammount))
 
-
 #-----------------------------
+
+# [Timestampped DATA ] #
+
+def sample_data_with_timestamp(sample_data_ammount):
+    print('Creating Nested data...')
+    data_created = 0
+    pbar = tqdm(total=sample_data_ammount)
+    while data_created < sample_data_ammount:
+        random_sponsor_id = random.choice(raw_db.get_collection_docs('Sponsors'))
+        random_item_id = random.choice([random.choice(raw_db.get_collection_docs('Tracks')), random.choice(raw_db.get_collection_docs('Sensors')), random.randint(10001,99999)]) # add func to get control ids
+        id = '{}{}'.format(random_sponsor_id, random_item_id)
+        if raw_db.check_data_existance('Investments',id) == True:
+            continue
+        else:
+            ammount = random.randint(2001,10000)
+            allocated_to = fake.words(6, ext_word_list=None) #create dict;
+            k = random.random()
+            ebtida = ammount + (ammount*k)
+            data = raw_db.Investment(ammount,allocated_to,ebtida).to_dict()
+            investment_ref = raw_db.db.collection('Investments').document(id)
+            investment_ref.set(raw_db.Timestamp(data).to_dict())
+            pbar.update(+1)
+            data_created = data_created + 1
+    print('\nSuccesfully sent all {} Nested data samples to the Database!'.format(sample_data_ammount))
+#------------------------------
+
+def get_document_data(collection,document):
+    # [REFERENCE collection (AND/OR document)]
+    doc_ref = raw_db.db.collection(collection).document(document)
+    doc = doc_ref.get()
+    if collection == 'Investments':
+        #print('{} => {}'.format(doc.id, doc.to_dict()))
+        timestamp = raw_db.Timestamp(doc.to_dict())
+        for key, value in timestamp:
+            investment = raw_db.Investment(**value)
+            print(investment.ammount)
+            print(investment)
+            print(investment.allocated_to)
+            print(investment.allocated_to[1])
+            if 'budget' in investment.allocated_to:
+                print('i need to dab, omg')
+            if not 'meu_deus_isso_ta_top' in investment.allocated_to:
+                print('carai, vou chorar')
+
+get_document_data('Investments','1188535302')
 
 #sample_sponsor_data(100)
 #sample_track_data(50)
@@ -203,4 +247,4 @@ def sample_investment_data(sample_data_ammount):
 #sample_profile_data(10)
 #sample_user_data(20)
 #sample_gamification_data(10)
-#sample_investment_data(10)
+#sample_data_with_timestamp(3)
