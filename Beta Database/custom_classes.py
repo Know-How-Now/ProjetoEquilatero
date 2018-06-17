@@ -1,20 +1,6 @@
-# [START: LIBRARY IMPORTS] #
-import firebase_admin
-from firebase_admin import credentials, firestore
-from google.cloud import exceptions as exception
-from google.cloud import firestore as cloudfirestore
 from faker import Faker
+import datetime
 fake = Faker()
-# [END: LIBRARY IMPORTS] #
-
-# [START: GLOBAL VARIABLES] #
-cred = credentials.Certificate('/Users/cbmelo/Documents/Projects/GitHub Repositories/ProjetoEquilatero/Equilatero_Raw_Database_serviceAccount.json')
-#cred = credentials.Certificate('C:/Users/aluno/Documents/GitHub Repositories/ProjetoEquilatero-master/Equilatero_Raw_Database_serviceAccount.json')
-firebase_admin.initialize_app(cred)
-db = firestore.client()
-transaction = db.transaction()
-batch = db.batch()
-# [END: GLBOAL VARIABLES] #
 
 # [START: SPONSOR DESCRIPTION] #
 class Sponsor(object): #sponsor_id = range(10001,20000) // ex.: 12345
@@ -243,14 +229,14 @@ class Investment(object): #investment_id = sponsor_id + item_id // ex.: 10001281
             self.ammount, self.allocated_to, self.ebtida)
     # [END: INVESTMENT DESCRIPTION] #
 
-class Timestamp(object):
-    def __init__(self, my_class=object):
+class Timestamp:
+    def __init__(self, my_class):
         self.timestamp = str(fake.date_time_between(start_date='-1y', end_date='-1m'))
         self.my_class = my_class
 
     @staticmethod
     def from_dict(source):
-        timestamp = Timestamp()
+        timestamp = Timestamp(source[''])
         if 'my_class' in source:
             timestamp.my_class = source['my_class']
         return timestamp
@@ -268,35 +254,3 @@ class Timestamp(object):
     def __repr__(self):
         return '{}'.format(self.my_class)
     # [END: SENSOR DESCRIPTION] #
-
-
-# [START check IF Usuario EXISTS] #
-def check_data_existance(collection, document):
-    doc_ref = db.collection(collection).document(document)
-    try:
-        doc = doc_ref.get()
-        #print('Document exits: {}'.format(doc.to_dict()))
-        #return doc.to_dict()
-        return True
-    except exception.NotFound:
-        #print('No such document!')
-        return False
-    # [END OF check] #
-
-# [START .get ALL DATA IN colletion] #
-def get_collection_docs(collection):
-    docs = db.collection(collection).get()
-    docs_id = []
-    for doc in docs:
-        docs_id.append(doc.id)
-    return docs_id
-    #[END of function]
-
-def get_track_length(collection,document):
-    # [REFERENCE collection (AND/OR document)]
-    doc_ref = db.collection(collection).document(document)
-    doc = doc_ref.get()
-    if collection == 'Tracks':
-        track = Track.from_dict(doc.to_dict())
-        return track.length
-    # [END: SPONSOR DESCRIPTION] #
