@@ -93,109 +93,38 @@ class Sensor(object): #sensor_id = track_id + sensor_num // ex.: 28101+001
             self.position, self.angle, self.humidity, self.temperature)
     # [END: SENSOR DESCRIPTION] #
 
-# [START: USER PROFILE -- LEFT WRIST] # 
-class Profile(object): #profile_id = 5 + deficiência {range(0,6)} + sensor_id // ex.: 50+28101001 or 5628101001
-    def __init__(self, sex, birthdate=0, group_size=0, control_id=0, **kwargs):
+# [START: PROFILE DESCRIPTION] # 
+class Profile(object):  #profile_id = 5 + deficiência {range(0,6)} + sensor_id
+    def __init__(self, sex, birthdate, profession, transport, motivation=[''], **kwargs):
         self.sex = sex
         self.birthdate = birthdate
-        self.group_size = group_size
-        self.control_id = control_id
+        self.profession = profession
+        self.transport = transport
+        self.motivation = motivation
         self.__dict__.update(kwargs)
 
     @staticmethod
     def from_dict(source):
-        profile = Profile(source['sex'], source['birthdate'], source['group_size'], source['control_id'])
+        profile = Profile(source['sex'], source['birthdate'], source['profession'], source['transport'])
+        if 'motivation' in source:
+            profile.motivation = source['motivation']
         return profile
 
     def to_dict(self):
         profile_dest = {
             'sex': self.sex,
             'birthdate': self.birthdate,
-            'group_size': self.group_size,
-            'control_id': self.control_id
+            'profession': self.profession,
+            'transport': self.transport
         }
+        if self.motivation:
+            profile_dest['motivation'] = self.motivation
         return profile_dest
 
     def __repr__(self):
-        return 'Profile(sex={}, birthdate={}, group_size={}, control_id={})'.format(
-            self.sex, self.birthdate, self.group_size, self.control_id)
-    # [END: USER PROFILE -- LEFT WRIST] #
-
-# [START: USER DESCRIPTION] # 
-class User(object): #user_id = range(60 ++)
-    def __init__(self, name, sex, birthdate='', contact='', **kwargs):
-        self.name = name
-        self.sex = sex
-        self.birthdate = birthdate
-        self.contact = contact
-        self.__dict__.update(kwargs)
-
-    @staticmethod
-    def from_dict(source):
-        user = User(source['name'], source['sex'])
-        if 'birthdate' in source:
-            user.birthdate = source['birthdate']
-        if 'contact' in source:
-            user.contact = source['contact']
-        return user
-
-    def to_dict(self):
-        user_dest = {
-            'name': self.name,
-            'sex': self.sex
-        }
-        if self.birthdate:
-            user_dest['birthdate'] = self.birthdate
-        if self.contact:
-            user_dest['contact'] = self.contact
-        return user_dest
-
-    def __repr__(self):
-        return 'User(name={}, sex={}, birthdate={}, contact={})'.format(
-            self.name, self.sex, self.birthdate, self.contact)
-    # [END: USER DESCRIPTION] #
-
-# [START: GAMIFICATION PROFILE -- RIGHT WRIST] #
-class Gamification(object): #gamification_id = user_id + sensor_id // ex.: 60+28101001 or 1000+28101001, or 9999+28101001
-    def __init__(self, title, experience=0, milestones=[''], achievements=[''], control_id=[0], **kwargs):
-        self.title = title
-        self.experience = experience
-        self.milestones = milestones
-        self.achievements = achievements
-        self.control_id = control_id
-        self.__dict__.update(kwargs)
-
-    @staticmethod
-    def from_dict(source):
-        gamification = Gamification(source['title'])
-        if 'experience' in source:
-            gamification.experience = source['experience']
-        if 'milestones' in source:
-            gamification.milestones = source['milestones']
-        if 'checkpoints' in source:
-            gamification.achievements = source['achievements']
-        if 'control_id' in source:
-            gamification.control_id = source['control_id']
-        return gamification
-
-    def to_dict(self):
-        gamification_dest = {
-            'title': self.title
-        }
-        if self.experience:
-            gamification_dest['experience'] = self.experience
-        if self.milestones:
-            gamification_dest['milestones'] = self.milestones
-        if self.achievements:
-            gamification_dest['achievements'] = self.achievements
-        if self.control_id:
-            gamification_dest['control_id'] = self.control_id
-        return gamification_dest
-
-    def __repr__(self):
-        return 'Gamification(title={}, experience={}, milestones={}, achievements={}, control_id={})'.format(
-            self.title, self.experience, self.milestones, self.achievements, self.control_id)
-    # [END: GAMIFICATION PROFILE -- RIGHT WRIST] #
+        return 'Profile(sex={}, birthdate={}, profession={}, transport={}, motivation={})'.format(
+            self.sex, self.birthdate, self.profession, self.transport, self.motivation)
+    # [END: PROFILE DESCRIPTION] #
 
 # [START: INVESTMENT DESCRIPTION] #
 class Investment(object): #investment_id = sponsor_id + item_id // ex.: 1000128101 ou 1000140001
