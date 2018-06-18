@@ -36,3 +36,18 @@ track_dict = dict(track_zipped)
 track_df = pd.DataFrame(track_dict)
 
 track_trait_choices = list(zip(track_traits_1_list,track_traits_2_list))
+
+# ----------[Transport Means]---------- #
+#transport_data_string = ''
+#transport_data_list = transport_data_string.split(',')
+
+#transport_type = transport_data_list[0::3]
+#transport_name = transport_data_list[0::3]
+
+#transport_labels = ['Type','Name']
+#transport_columns = [transport_type, transport_name]
+
+#transport_zipped = list(zip(transport_labels, transport_columns))
+#transport_dict = dict(transport_zipped)
+
+#transport_data_df = pd.DataFrame(transport_dict)
