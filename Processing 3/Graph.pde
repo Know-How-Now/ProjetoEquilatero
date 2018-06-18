@@ -29,6 +29,7 @@ boolean drawValues  = false;
 /*===[ MAIN SETUP ]===*/
 void setup() {
   size(600, 400);
+  print(Serial.list());
   serial = new Serial(this, Serial.list()[1], 115200); // Set this to your serial port obtained using the line above
   serial.bufferUntil('\n'); // Buffer until line feed
   
