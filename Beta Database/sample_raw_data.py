@@ -103,16 +103,18 @@ def sample_sensor_data(sample_data_ammount):
 
 #---------------------[ PROFILE SAMPLE DATA ]---------------------#
 #---[ profile_id = 5 + deficiência {range(0,6)} + sensor_id // ex.: 50+28101001 ]---#
-            #--------[ sex, birthdate, profession, transport, motivation ]--------#              
+            #--------[ sex, birthdate,current location, hometown, profession, transport, motivation ]--------#              
 
 # [Function Start: Sample data FUNC for 'Profile'] 
 def random_profile_data():
     sex = random.choice(['Male','Female'])
-    birthdate = fake.date_time_between(start_date='-50y', end_date='-15y') #date only - not timestamp - FIX
+    birthdate = fake.date_time_between(start_date='-50y', end_date='-15y')
+    hometown = fake.state()
+    current_location = fake.state()
     profession = fake.job()
-    transport = random.choice(['Carro','Onibus','Van','Bicicleta','Outro'])
+    transport = random.choice(['Carro','Onibus','Van','Bicicleta','Carona','Moto'])
     motivation = random.choice(['Motivo1','Motivo2','Motivo3','Motivo4','Motivo4'])
-    data = c_class.Profile(sex,birthdate,profession,transport,motivation).to_dict()
+    data = c_class.Profile(sex,birthdate,hometown,current_location,profession,transport,motivation).to_dict()
     return data
 
 # [Function Start: Set/Update 'Profile' with generated data] 
