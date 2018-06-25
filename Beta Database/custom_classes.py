@@ -95,9 +95,11 @@ class Sensor(object): #sensor_id = track_id + sensor_num // ex.: 28101+001
 
 # [START: PROFILE DESCRIPTION] # 
 class Profile(object):  #profile_id = 5 + deficiência {range(0,6)} + sensor_id
-    def __init__(self, sex, birthdate, profession, transport, motivation=[''], **kwargs):
+    def __init__(self, sex, birthdate, hometown, current_location, profession, transport, motivation=[''], **kwargs):
         self.sex = sex
         self.birthdate = birthdate
+        self.hometown = hometown
+        self.current_location = current_location
         self.profession = profession
         self.transport = transport
         self.motivation = motivation
@@ -105,7 +107,7 @@ class Profile(object):  #profile_id = 5 + deficiência {range(0,6)} + sensor_id
 
     @staticmethod
     def from_dict(source):
-        profile = Profile(source['sex'], source['birthdate'], source['profession'], source['transport'])
+        profile = Profile(source['sex'], source['birthdate'], source['hometown'], source['current_location'], source['profession'], source['transport'])
         if 'motivation' in source:
             profile.motivation = source['motivation']
         return profile
@@ -114,6 +116,8 @@ class Profile(object):  #profile_id = 5 + deficiência {range(0,6)} + sensor_id
         profile_dest = {
             'sex': self.sex,
             'birthdate': self.birthdate,
+            'hometown': self.hometown,
+            'current_location': self.current_location,
             'profession': self.profession,
             'transport': self.transport
         }
@@ -122,8 +126,8 @@ class Profile(object):  #profile_id = 5 + deficiência {range(0,6)} + sensor_id
         return profile_dest
 
     def __repr__(self):
-        return 'Profile(sex={}, birthdate={}, profession={}, transport={}, motivation={})'.format(
-            self.sex, self.birthdate, self.profession, self.transport, self.motivation)
+        return 'Profile(sex={}, birthdate={}, hometown={}, current_location={}, profession={}, transport={}, motivation={})'.format(
+            self.sex, self.birthdate, self.hometown, self.current_location, self.profession, self.transport, self.motivation)
     # [END: PROFILE DESCRIPTION] #
 
 # [START: INVESTMENT DESCRIPTION] #
