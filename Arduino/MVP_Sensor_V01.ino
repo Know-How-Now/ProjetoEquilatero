@@ -5,7 +5,7 @@
 SoftwareSerial btSerial(10, 11);
 SoftEasyTransfer btOutgoing;
 
-bool configMode = false;
+bool configMenu = false, configMode = false;
 
 struct sensorStructuredData{
   unsigned long sensorID;
@@ -27,9 +27,7 @@ void setup() {
 void loop(){ //sensorDelay(); > smartbandDelay();
   btOutgoing.sendData();
   delay(300);
-  if (Serial.available()>0 && configMode == false){
-    Serial.println("Inicializando opções de configuração...");
-    configMode = true;
+  if (Serial.available()){
     pythonConfigSensor(); }
 }
 
@@ -52,41 +50,48 @@ void pythonConfigSensor(){
   byte index;
   char incomingFlag = Serial.read();
   /*Display configuration menu options*/
-  Serial.println("Modo de configuração ativado.");
-  Serial.println("Envie 'V' para visualizar os dados do sensor...");
-  Serial.println("Envie 'A' para apagar dados do sensor...");
-  Serial.println("Para reconfigurar o sensor, apague os dados atuais ('A') e envie 'C'...");
-  Serial.println("Aperte 'Q' para sair");
+  if (configMenu == false){
+    Serial.println("Modo de configuração ativado.");
+    Serial.println("Envie 'V' para visualizar os dados do sensor...");
+    Serial.println("Envie 'A' para apagar dados do sensor...");
+    Serial.println("Para reconfigurar o sensor, apague os dados atuais ('A') e envie 'C'...");
+    Serial.println("Aperte 'Q' para sair"); 
+    configMenu = true; configMode = true; }
   /*Quit configuration menu option*/
-  if(incomingFlag == 'q'){ //Quit configuration mode 
-    configMode == false; }
-  /*Send present data/settings to python*/ 
-  if(incomingFlag == 'v'){ //Visualize collected data
-    Serial.println("Enviando dados do sensor...");
-    eepromMethod("sens get", 0); delay(100);
-    Serial.println(sensorData[0].sensorID); delay(100);
-    Serial.println(sensorData[0].position); delay(100);
-    Serial.println(sensorData[0].angle); delay(100);
-    Serial.println(sensorData[0].sensorLap); delay(100);
-    Serial.println(sensorData[0].altitude); delay(100);
-    Serial.println(sensorData[0].temperature); delay(100);
-    Serial.println(sensorData[0].humidity); delay(100);
-    Serial.println("Dados enviados com êxito!"); }
-  /*Erase EEPROM data*/
-  if(incomingFlag == 'a'){
-    Serial.println("Apagando dados do sensor...");
-    eepromMethod("clear", 1);
-    Serial.println("Dados apagados com êxito!"); }
-  /*Write incoming python data in EEPROM*/ 
-  if(incomingFlag == 'c'){ //Start 'Configuration'
-    Serial.println("Reconfigurando sensor...");
-    sensorData[0].sensorID = Serial.read();
-    sensorData[0].position = Serial.read();
-    sensorData[0].angle = Serial.read();
-    sensorData[0].sensorLap = Serial.read();
-    sensorData[0].altitude = Serial.read();
-    sensorData[0].temperature = Serial.read();
-    sensorData[0].humidity = Serial.read();
-    eepromMethod("sens put", 0);
-    Serial.println("Sensor configurado com êxito!"); }
+  if (configMode == true){
+    if(incomingFlag == 'q'){
+      Serial.println("Modo de configuração encerrado.");
+      configMenu = false;
+      configMode = false;
+      delay(100); }
+    /*Send present data/settings to python*/ 
+    if(incomingFlag == 'v'){
+      Serial.println("Enviando dados do sensor...");
+      eepromMethod("sens get", 0); delay(100);
+      Serial.println(sensorData[0].sensorID); delay(100);
+      Serial.println(sensorData[0].position); delay(100);
+      Serial.println(sensorData[0].angle); delay(100);
+      Serial.println(sensorData[0].sensorLap); delay(100);
+      Serial.println(sensorData[0].altitude); delay(100);
+      Serial.println(sensorData[0].temperature); delay(100);
+      Serial.println(sensorData[0].humidity); delay(100);
+      Serial.println("Dados enviados com êxito!"); }
+    /*Erase EEPROM data*/
+    if(incomingFlag == 'a'){
+      Serial.println("Apagando dados do sensor...");
+      eepromMethod("clear", 1);
+      Serial.println("Dados apagados com êxito!"); }
+    /*Write incoming python data in EEPROM*/ 
+    if(incomingFlag == 'c'){ //Start 'Configuration'
+      Serial.println("Sensor pronto para ser reconfigurado sensor.");
+      sensorData[0].sensorID = Serial.read();
+      sensorData[0].position = Serial.read();
+      sensorData[0].angle = Serial.read();
+      sensorData[0].sensorLap = Serial.read();
+      sensorData[0].altitude = Serial.read();
+      sensorData[0].temperature = Serial.read();
+      sensorData[0].humidity = Serial.read();
+      eepromMethod("sens put", 0);
+      Serial.println("Sensor reconfigurado com êxito!"); }
+   }
 }
