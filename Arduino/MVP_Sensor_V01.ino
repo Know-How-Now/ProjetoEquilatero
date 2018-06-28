@@ -51,14 +51,16 @@ void eepromMethod(char method[8], byte index){
 void pythonConfigSensor(){
   byte index;
   char incomingFlag = Serial.read();
+  /*Display configuration menu options*/
   Serial.println("Modo de configuração ativado.");
   Serial.println("Envie 'V' para visualizar os dados do sensor...");
   Serial.println("Envie 'A' para apagar dados do sensor...");
   Serial.println("Para reconfigurar o sensor, apague os dados atuais ('A') e envie 'C'...");
   Serial.println("Aperte 'Q' para sair");
-  /*Send present data/settings to python*/ 
+  /*Quit configuration menu option*/
   if(incomingFlag == 'q'){ //Quit configuration mode 
     configMode == false; }
+  /*Send present data/settings to python*/ 
   if(incomingFlag == 'v'){ //Visualize collected data
     Serial.println("Enviando dados do sensor...");
     eepromMethod("sens get", 0); delay(100);
