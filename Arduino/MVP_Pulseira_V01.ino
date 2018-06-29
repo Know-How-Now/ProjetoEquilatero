@@ -91,42 +91,11 @@ void setup(){
   mag.begin();delay(50);
   bmp.begin();delay(50);
   btSerial.begin(38400);
-  //compass = HMC5883L();
-  //compass.SetScale(1.3);
-  //compass.SetMeasurementMode(Measurement_Continuous);
-  for (int i = 0; i >= 10; i++) {
-  userMode = configUserMode();
-  switch (userMode){
-    //Case 1: Left button + short press
-    case GUIDE_MODE:
-        vibratorWarning(7, 1, 1000);
-        btIncoming.begin(details(smartbandData[0].followerOrientation), &btSerial);
-        btOutgoing.begin(details(smartbandData[0].guideOrientation), &btSerial);
-      break;
-    //Case 2: Left button + long press
-    case FOLLOWER_MODE:
-        vibratorWarning(7, 2, 1000);
-        btIncoming.begin(details(smartbandData[0].guideOrientation), &btSerial);
-        btOutgoing.begin(details(smartbandData[0].followerOrientation), &btSerial);
-      break;
-    //Case 3: Right button + short press
-    case SENSOR_GUIDED_MODE:
-        vibratorWarning(7, 3, 1000);
-        btIncoming.begin(details(sensorData), &btSerial);
-      break;
-    //Case 4: Right button + long press
-    case NO_DATA_COLLECTION_MODE:
-      vibratorWarning(7, 4, 1000);
-      setupDone = false;
-      break;
-    //Case 0: No buttons are being pressed...
-    case LOOP:
-      continue;
-  }
+  compass = HMC5883L();
+  compass.SetScale(1.3);
+  compass.SetMeasurementMode(Measurement_Continuous);
 }
 
-
-/*Device ______*/
 void loop(){
   /*userMode = configUserMode();
   switch (userMode){
@@ -195,7 +164,7 @@ void loop(){
         }
         
         delay(10);
-        }        
+     }        
 //}
 
 void vibratorWarning(int side, byte intensity, int interval){
