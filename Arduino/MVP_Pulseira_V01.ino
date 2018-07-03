@@ -1,35 +1,39 @@
+//##################################################//
+//################ TO BE DONE LIST #################//
+//############### I. LOCAL DE INTERESSE ############//
+//############# II. ON/OFF BUTTON ##################//
+//############## III. OLED DISPLAY #################//
+//################ IV. PEDOMETER ###################//
+//##################################################//
+
 /*Libraries*/
 #include <Wire.h>
 #include <I2Cdev.h>
 #include <MPU6050.h>
 #include <HMC5883L.h>
-#include <Adafruit_Sensor.h>
-#include "Adafruit_HMC5883_U.h"
-#include "Adafruit_BMP085_U.h"
-#include <Kalman.h>
+#include <Adafruit_BMP085.h>
+//#include <Kalman.h>
 #include <Bounce2.h>
 #include <EEPROM.h>
 #include <SoftEasyTransfer.h>
 #include <SoftwareSerial.h>
 
 /*Create object instances: class objectName = classObject(*parameter)*/
-//Bounce2 (debouncer):
+//Debouncer):
 Bounce dbButtonLeft = Bounce();
 Bounce dbButtonRight = Bounce();
-//SoftEasyTransfer + SoftwareSerial (bluetooth):
+//Bluetooth:
 SoftwareSerial btSerial(10, 11);
-SoftEasyTransfer btIncoming, btOutgoing;
-//GY-88 modules' objects:
-MPU6050 accelgyro;
-MagnetometerScaled scaled;
+SoftEasyTransfer btGuideIN, btGuideOUT, btFollowerIN, btFollowerOUT, btSensorIN, btBetaUser;
+//GY-88:
+MPU6050 mpu;
 HMC5883L compass;
-Adafruit_HMC5883_Unified mag;
-Adafruit_BMP085_Unified bmp;
-//Filters
-Kalman kx, ky, kz;
+Adafruit_BMP085 bmp;
+//Kalman: 
+//Kalman kx, ky, kz;
 
-/*Global constants:*/
-#define LOOP 0
+/*Define constant variables:*/
+#define DEFAULT_MODE 0
 #define GUIDE_MODE 1
 #define FOLLOWER_MODE 2
 #define SENSOR_GUIDED_MODE 3
@@ -37,19 +41,13 @@ Kalman kx, ky, kz;
 #define VIBRATOR_LEFT 5
 #define VIBRATOR_RIGHT 6
 #define SENSORS_IN_TRACK 4
-#define DECLINATION_ANGLE -0.38502
-#define SEA_LEVEL_PRESSURE 1017
-
-/*Global variables:*/
-//GY-88/10-DOF data:
-int16_t ax, ay, az;
-int16_t gx, gy, gz;
-int16_t mx, my, mz;
+#define DECLINATION_ANGLE -0.3843
+#define SEA_LEVEL_PRESSURE 101700
 
 /*Structured data:*/
 struct smartbandStructuredData{
-  unsigned long controlID = 9374;
-  byte profileID = 51;
+  unsigned long CONTROL_ID = 9374;
+  byte PROFILE_ID = 51;
   byte misguidances = 0;
   float guideOrientation = 0;
   float followerOrientation = 0;
@@ -65,17 +63,29 @@ struct sensorStructuredData{
   byte humidity;
 } sensorData[SENSORS_IN_TRACK];
 
-/*"Volatile" variables:*/
-//UserMode configuration variables:
-byte userMode, structArrayCounter = 0;
+/*Global Variables*/
+//MPU, HMC, BMP
+float ax, ay, az;
+float gx, gy, gz;
+float mx, my, mz;
+float heading, altitude, temperature;
+
+/*Pedometer -- FUTURE IMPLEMENTATION
+stroll = false, halfPass = false, sprint = false;
+*/
+
+/*“Volatile” variables:*/
+//Configuration-related
+byte userMode, prevUserMode = 0;
+
+//Counter-related variables
+byte structArrayCounter = 0;
+bool timerOn = false;
 unsigned long buttonTimer, lapTimer;
-bool setupDone = false, timerOn = false, jumpToLoop = false, stroll = false, halfPass = false, sprint = false;
-float altitude, temperature, pressure;
 
 /*Setup Arduino & Modules*/
 void setup(){
-  Serial.begin(38400);
-  //Arduino's modules' definitions
+  //Arduino’s modules’ definitions
   pinMode(VIBRATOR_LEFT, INPUT);
   pinMode(VIBRATOR_RIGHT, INPUT);
   pinMode(7, INPUT_PULLUP);
@@ -85,90 +95,146 @@ void setup(){
   dbButtonLeft.interval(20);
   dbButtonRight.attach(8);
   dbButtonRight.interval(20);
-  //Initialize modules
-  Wire.begin();delay(50);
-  accelgyro.initialize();delay(50);
-  mag.begin();delay(50);
-  bmp.begin();delay(50);
+  Wire.begin();
+  Serial.begin(38400);
+  //Initialize & configure MPU6050 (accelerometer)
+  while(!mpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G)){
+    delay(500); }
+  mpu.setI2CMasterModeEnabled(false);
+  mpu.setI2CBypassEnabled(true) ;
+  mpu.setSleepEnabled(false);
+  while (!compass.begin()){
+    delay(500); }
+  compass.setRange(HMC5883L_RANGE_1_3GA); //Range in gauss
+  compass.setMeasurementMode(HMC5883L_CONTINOUS); //Set compass. to measure continuously
+  compass.setDataRate(HMC5883L_DATARATE_30HZ); //Rate of compass. data collectioon
+  compass.setSamples(HMC5883L_SAMPLES_8); //Num. of samples to average
+  compass.setOffset(0, 0); //Mag. calibration
+  while (!bmp.begin()){
+    delay(500); }
   btSerial.begin(38400);
-  compass = HMC5883L();
-  compass.SetScale(1.3);
-  compass.SetMeasurementMode(Measurement_Continuous);
+  btGuideIN.begin(details(smartbandData[0].followerOrientation), &btSerial);
+  btGuideOUT.begin(details(smartbandData[0].guideOrientation), &btSerial);
+  btFollowerIN.begin(details(smartbandData[0].guideOrientation), &btSerial);
+  btFollowerOUT.begin(details(smartbandData[0].followerOrientation), &btSerial);
+  btSensorIN.begin(details(sensorData), &btSerial);
+  //btBetaUser.begin(details(betaData), &btSerial);
+  Serial.begin(38400);
+  if (Serial.available() > 0){
+    sendDataToPython();
+  }
 }
 
 void loop(){
-  /*userMode = configUserMode();
+  Vector acc = mpu.readScaledAccel();
+  Vector mag = compass.readNormalize();
+  lapTimer = micros();
+  
+  userMode = configUserMode();
   switch (userMode){
+    //Case 0: No buttons are being pressed...
+    case DEFAULT_MODE:
+      //userMode = prevUserMode;
+      break;
     //Case 1: Left button + short press
     case GUIDE_MODE:
-        vibratorWarning(7, 1, 1000);
-        btIncoming.begin(details(smartbandData[0].followerOrientation), &btSerial);
-        btOutgoing.begin(details(smartbandData[0].guideOrientation), &btSerial);
-      break;
+      if(prevUserMode != userMode){ 
+        vibratorWarning(7, 1, 1000); }
+      tiltCompensation(mag, acc);
+      smartbandData[0].guideOrientation = (int)(heading * 180/M_PI);
+      btGuideOUT.sendData();
+      if (btSerial.available() > 0){
+        btGuideIN.receiveData(); 
+        if (abs(smartbandData[0].guideOrientation) != (abs(smartbandData[0].followerOrientation) +- 15)){
+          vibratorWarning(7, 3, 200); }
+        }
+        break;
     //Case 2: Left button + long press
     case FOLLOWER_MODE:
-        vibratorWarning(7, 2, 1000);
-        btIncoming.begin(details(smartbandData[0].guideOrientation), &btSerial);
-        btOutgoing.begin(details(smartbandData[0].followerOrientation), &btSerial);
+      if(prevUserMode != userMode){ 
+        vibratorWarning(7, 2, 1000); }
+      tiltCompensation(mag, acc);
+      smartbandData[0].followerOrientation = (int)(heading * 180/M_PI);
+      btFollowerOUT.sendData();
+      if (btSerial.available() > 0){
+        btFollowerIN.receiveData(); 
+        if (abs(smartbandData[0].followerOrientation) != (abs(smartbandData[0].guideOrientation)) +- 15){
+          vibratorWarning(7, 3, 200); }
+        }
       break;
     //Case 3: Right button + short press
     case SENSOR_GUIDED_MODE:
-        vibratorWarning(7, 3, 1000);
-        btIncoming.begin(details(sensorData), &btSerial);
+      if(prevUserMode != userMode){ 
+        vibratorWarning(7, 3, 1000); }
+      if (btSerial.available() > 0){ 
+        if(btSensorIN.receiveData()){
+        double sensorLap = (double)(micros() - lapTimer) / 1000000;
+        temperature = bmp.readTemperature();
+        altitude = bmp.readAltitude(SEA_LEVEL_PRESSURE);
+        sensorData[structArrayCounter].temperature = temperature;
+        sensorData[structArrayCounter].altitude = altitude;
+        sensorData[structArrayCounter].humidity = 88; //random humidity
+        sensorData[structArrayCounter].sensorLap = (float)(micros() - lapTimer) / 100000000;
+        eepromMethod(“sens put”, structArrayCounter);
+        structArrayCounter++; }
+        }
       break;
     //Case 4: Right button + long press
     case NO_DATA_COLLECTION_MODE:
-      vibratorWarning(7, 4, 1000);
-      setupDone = false;
+      if(prevUserMode != userMode){ 
+        vibratorWarning(7, 4, 1000); }
       break;
-    //Case 0: No buttons are being pressed...
-    case LOOP:*/
-      sensors_event_t event;
-      mag.getEvent(&event);
-      bmp.getEvent(&event);
+    }    
+   prevUserMode = userMode;
       
-      float heading = atan2(event.magnetic.y, event.magnetic.x);
-      heading += DECLINATION_ANGLE;
-      if(heading < 0)
-        heading += 2*PI;
-      if(heading > 2*PI)
-        heading -= 2*PI;
-        
-      float headingDegrees = heading * 180/M_PI; 
-      
-      Serial.print(headingDegrees);
-      //accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-      //ax = abs(ax);
-      //ay = abs(ay);
-      //az = abs(az);
-      
-      if (structArrayCounter == 0){
-          lapTimer = micros(); 
-          }
-      
-      btOutgoing.sendData();
-      if (btSerial.available() > 0){ //smartbandDelay(); < sensorDelay();
-        btIncoming.receiveData(); //Attempt to avoid buffer buildups: Rx rate > Tx rate
-        double sensorLap = (double)(micros() - lapTimer) / 1000000;
-        bmp.getPressure(&pressure);
-        bmp.getTemperature(&temperature);
-        bmp.pressureToAltitude(1017, event.pressure, event.temperature);
-        
-        sensorData[structArrayCounter].temperature = temperature;
-        sensorData[structArrayCounter].altitude = altitude;
-        sensorData[structArrayCounter].humidity = 88;
-        sensorData[structArrayCounter].sensorLap = (float)(micros() - lapTimer) / 100000000;
-        
-        eepromMethod("put band", structArrayCounter);
-        lapTimer = micros();
-        }
-        
-        delay(10);
-     }        
-//}
+  delay(500);
+}
 
-void vibratorWarning(int side, byte intensity, int interval){
-  for (byte i; i<intensity; i++){
+byte configUserMode(){
+  byte buttonPressRight, buttonPressLeft;
+  userMode = DEFAULT_MODE;
+  dbButtonLeft.update();
+  dbButtonRight.update();
+  
+  /*Left Button*/
+  if (dbButtonLeft.fell()){
+    buttonTimer = millis();
+    timerOn = true; }
+  if (dbButtonLeft.rose()){
+    buttonPressLeft = (millis() - buttonTimer);
+    timerOn = false; }
+  //Case 1 (short press): Guider mode = 1
+  if (buttonPressLeft > 0 && buttonPressLeft <= 250){
+    userMode = GUIDE_MODE;
+    buttonPressLeft = 0; }
+  //Case 2: Follower mode = 2
+  if (timerOn == true && (millis() - buttonPressLeft) > 3000){
+    userMode = FOLLOWER_MODE;
+    timerOn = false;
+    buttonPressLeft = 0; }
+  
+  /*Right button*/
+  if (dbButtonRight.fell()){
+    buttonTimer = millis();
+    timerOn = true; }
+  if (dbButtonRight.rose()){
+    buttonPressRight = (millis() - buttonTimer);
+    timerOn = false; }
+  //Case 3 (short press): Sensor guided mode = 3
+  if (buttonPressRight > 0 && buttonPressRight <= 250){
+    userMode = SENSOR_GUIDED_MODE;
+    buttonPressRight = 0; }
+  //Case 4 (long press): Display data only, none collected = 4
+  if (timerOn == true && (millis() - buttonPressRight) > 3000){
+    userMode = NO_DATA_COLLECTION_MODE;
+    timerOn = false;
+    buttonPressRight = 0; }
+    
+  return userMode;
+}
+
+void vibratorWarning(int side, byte duration, int interval){
+  for (byte i; i<duration; i++){
     if (side == 7){
       digitalWrite(VIBRATOR_LEFT,HIGH);
       digitalWrite(VIBRATOR_RIGHT, HIGH);
@@ -182,70 +248,67 @@ void vibratorWarning(int side, byte intensity, int interval){
     }
 }
 
-void eepromMethod(char method[8], byte index){
+void eepromMethod(String method, byte index){
   unsigned long eeAddress = 0;
   eeAddress += sizeof(unsigned long);
   //Write data in EEPROM address:
-  if (method == "sens put"){
+  if (method == “sens put”){
     EEPROM.put(eeAddress, sensorData[index]); }
   //Access data written in EEPROM address:
-  else if (method == "sens get"){
+  else if (method == “sens get”){
     EEPROM.get(eeAddress, sensorData[index]); }
-  else if (method == "band put"){
+  else if (method == “band put”){
     EEPROM.put(eeAddress, smartbandData[index]); }
-  else if (method == "band get"){
+  else if (method == “band get”){
     EEPROM.get(eeAddress, smartbandData[index]); }
 }
 
-//FIX: Enviar structs...
+float tiltCompensation(Vector mag, Vector normAccel){
+  float roll = asin(normAccel.YAxis);
+  float pitch = asin(-normAccel.XAxis);
+  
+  float cosRoll = cos(roll);
+  float sinRoll = sin(roll);  
+  float cosPitch = cos(pitch);
+  float sinPitch = sin(pitch);
+                
+  float Xh = mag.XAxis * cosPitch + mag.ZAxis * sinPitch;
+  float Yh = mag.XAxis * sinRoll * sinPitch + mag.YAxis * cosRoll - mag.ZAxis * sinRoll * cosPitch;
+  
+  heading = atan2(Yh, Xh);
+  return heading;
+}
+
 void sendDataToPython(){
   byte index;
-  char pythonFlag = Serial.read();
-
-  if (setupDone = false){
-  if(pythonFlag = 't'){ //Python flag to Arduino: start collected data 'Transmission'
+  char pythonFlag = Serial.read();  
+  //Collect profile data
+  if(pythonFlag == ‘b’){ 
+    eepromMethod(“get band”, 1); delay(100);
+    Serial.println(smartbandData[index].CONTROL_ID); delay(100);
+    Serial.println(smartbandData[index].PROFILE_ID); delay(100);
+    Serial.println(smartbandData[index].misguidances); delay(100);
+    Serial.println(‘\t’); }
+  //Collect sensor data
+  if(pythonFlag == ‘s’){
     for(index = 0; index < SENSORS_IN_TRACK; index++){
-      eepromMethod("get sens", index); delay(10);
-      Serial.println(sensorData[index].sensorID); delay(10);
-      Serial.println(sensorData[index].position); delay(10);
-      Serial.println(sensorData[index].angle); delay(10);
-      Serial.println(sensorData[index].sensorLap); delay(10);
-      Serial.println(sensorData[index].altitude); delay(10);
-      Serial.println(sensorData[index].temperature); delay(10);
-      Serial.println(sensorData[index].humidity); delay(10);
-      Serial.println('s'); } //Arduino flag: last data from index sent
-    
-    Serial.println('b'); delay(10); //Arduino flag: type 'smartBand' data is being sent
-      eepromMethod("get band", 1); delay(10);
-      Serial.println(smartbandData[index].controlID); delay(10);
-      Serial.println(smartbandData[index].profileID); delay(10);
-      Serial.println(smartbandData[index].misguidances); delay(10);
-      Serial.println('b'); //Arduino flag: all structured data sent
-    
-    if(pythonFlag = 'e') {}
-      for (index = 0; index < EEPROM.length() ; index++){
-        EEPROM.write(index, 0); }
-    }
-    
-  if(pythonFlag = 'c'){ //Python flag: start 'Configuration'
-    for(index = 0; index < SENSORS_IN_TRACK; index++){
-      sensorData[index].sensorID = Serial.read(); delay(10);
-      sensorData[index].position = Serial.read(); delay(10);
-      sensorData[index].angle = Serial.read(); delay(10);
-      sensorData[index].sensorLap = Serial.read(); delay(10);
-      sensorData[index].altitude = Serial.read(); delay(10);
-      sensorData[index].temperature = Serial.read(); delay(10);
-      sensorData[index].humidity = Serial.read(); delay(10);
-      eepromMethod("put sens", index); delay(1000);
-      Serial.println('s'); } //Arduino flag: last sensor from index saved
-    
-    Serial.println('b'); //Arduino flag: type 'smartBand' data is being saved on EEPROM
-      smartbandData[0].controlID = Serial.read();
-      smartbandData[0].profileID = Serial.read();
-      smartbandData[0].misguidances = Serial.read();
-      eepromMethod("put band", 1); delay(1000);
-      Serial.println('b'); //Arduino flag: all structured data saved on EEPROM
-      }
-   setupDone == true;
-  }
-}
+      eepromMethod(“sens get”, index); delay(100);
+      Serial.println(sensorData[index].sensorID); delay(100);
+      Serial.println(sensorData[index].position); delay(100);
+      Serial.println(sensorData[index].angle); delay(100);
+      Serial.println(sensorData[index].sensorLap); delay(100);
+      Serial.println(sensorData[index].altitude); delay(100);
+      Serial.println(sensorData[index].temperature); delay(100);
+      Serial.println(sensorData[index].humidity); delay(100);
+      Serial.println(‘\t’); } } 
+  //Clear Smartband EEPROM
+  if(pythonFlag = ‘e’){
+    for (index = 0; index < EEPROM.length() ; index++){
+      EEPROM.write(index, 0); 
+      Serial.println(‘\t’); } }
+  //Configure Smartband
+  if(pythonFlag = ‘c’){
+    smartbandData[0].CONTROL_ID = Serial.read(); delay(100);
+    smartbandData[0].PROFILE_ID = Serial.read(); delay(100);
+    eepromMethod(“band put”, 0); delay(1000);
+    Serial.println(‘\t’); }
