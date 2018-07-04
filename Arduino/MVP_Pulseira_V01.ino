@@ -1,12 +1,3 @@
-//##################################################//
-//################ TO BE DONE LIST #################//
-//############### I. LOCAL DE INTERESSE ############//
-//############# II. ON/OFF BUTTON ##################//
-//############## III. OLED DISPLAY #################//
-//################ IV. PEDOMETER ###################//
-//##################################################//
-
-/*Libraries*/
 #include <Wire.h>
 #include <I2Cdev.h>
 #include <MPU6050.h>
@@ -74,7 +65,7 @@ float heading, altitude, temperature;
 stroll = false, halfPass = false, sprint = false;
 */
 
-/*“Volatile” variables:*/
+/*"Volatile" variables:*/
 //Configuration-related
 byte userMode, prevUserMode = 0;
 
@@ -85,7 +76,7 @@ unsigned long buttonTimer, lapTimer;
 
 /*Setup Arduino & Modules*/
 void setup(){
-  //Arduino’s modules’ definitions
+  //Arduino's modules' definitions
   pinMode(VIBRATOR_LEFT, INPUT);
   pinMode(VIBRATOR_RIGHT, INPUT);
   pinMode(7, INPUT_PULLUP);
@@ -175,7 +166,7 @@ void loop(){
         sensorData[structArrayCounter].altitude = altitude;
         sensorData[structArrayCounter].humidity = 88; //random humidity
         sensorData[structArrayCounter].sensorLap = (float)(micros() - lapTimer) / 100000000;
-        eepromMethod(“sens put”, structArrayCounter);
+        eepromMethod("sens put", structArrayCounter);
         structArrayCounter++; }
         }
       break;
@@ -252,14 +243,14 @@ void eepromMethod(String method, byte index){
   unsigned long eeAddress = 0;
   eeAddress += sizeof(unsigned long);
   //Write data in EEPROM address:
-  if (method == “sens put”){
+  if (method == "sens put"){
     EEPROM.put(eeAddress, sensorData[index]); }
   //Access data written in EEPROM address:
-  else if (method == “sens get”){
+  else if (method == "sens get"){
     EEPROM.get(eeAddress, sensorData[index]); }
-  else if (method == “band put”){
+  else if (method == "band put"){
     EEPROM.put(eeAddress, smartbandData[index]); }
-  else if (method == “band get”){
+  else if (method == "band get"){
     EEPROM.get(eeAddress, smartbandData[index]); }
 }
 
@@ -283,16 +274,16 @@ void sendDataToPython(){
   byte index;
   char pythonFlag = Serial.read();  
   //Collect profile data
-  if(pythonFlag == ‘b’){ 
-    eepromMethod(“get band”, 1); delay(100);
+  if(pythonFlag == 'b'){ 
+    eepromMethod("get band", 1); delay(100);
     Serial.println(smartbandData[index].CONTROL_ID); delay(100);
     Serial.println(smartbandData[index].PROFILE_ID); delay(100);
     Serial.println(smartbandData[index].misguidances); delay(100);
-    Serial.println(‘\t’); }
+    Serial.println("\t"); }
   //Collect sensor data
-  if(pythonFlag == ‘s’){
+  if(pythonFlag == 's'){
     for(index = 0; index < SENSORS_IN_TRACK; index++){
-      eepromMethod(“sens get”, index); delay(100);
+      eepromMethod("sens get", index); delay(100);
       Serial.println(sensorData[index].sensorID); delay(100);
       Serial.println(sensorData[index].position); delay(100);
       Serial.println(sensorData[index].angle); delay(100);
@@ -300,15 +291,16 @@ void sendDataToPython(){
       Serial.println(sensorData[index].altitude); delay(100);
       Serial.println(sensorData[index].temperature); delay(100);
       Serial.println(sensorData[index].humidity); delay(100);
-      Serial.println(‘\t’); } } 
+      Serial.println("\t"); } } 
   //Clear Smartband EEPROM
-  if(pythonFlag = ‘e’){
+  if(pythonFlag = 'e'){
     for (index = 0; index < EEPROM.length() ; index++){
       EEPROM.write(index, 0); 
-      Serial.println(‘\t’); } }
+      Serial.println("\t"); } }
   //Configure Smartband
-  if(pythonFlag = ‘c’){
+  if(pythonFlag = 'c'){
     smartbandData[0].CONTROL_ID = Serial.read(); delay(100);
     smartbandData[0].PROFILE_ID = Serial.read(); delay(100);
-    eepromMethod(“band put”, 0); delay(1000);
-    Serial.println(‘\t’); }
+    eepromMethod("band put", 0); delay(1000);
+    Serial.println("\t"); }
+}
