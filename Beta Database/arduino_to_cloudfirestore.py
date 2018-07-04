@@ -90,3 +90,11 @@ print('SensorID: {}, RegionID: {}, Sensor Position: {}, Avg. Attempt: {}, State:
     valid_data[0],valid_data[1],valid_data[2],valid_data[3],valid_data[4],valid_data[5]))
 bs.send_Sensor_DATA(u'sensores',u'Sx00011',valid_data)
 print("\nSuccesfully sent all {} 'Sponsor' data samples to the Database!".format(sample_data_ammount))
+
+def structure_incoming_data(smartband_array, sensor_array):
+    profile_id = smartband_data[0]
+    control_id = smartband_data[1]
+    sensor_data_splitted = sensor_data.split('i')
+    for sensor in sensor_data_splitted:
+        return sensor
+    
