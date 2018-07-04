@@ -20,7 +20,7 @@ get_smartband_data = b'b'
 get_sensor_data = b's'
 clear_eeprom = b'e'
 configure_smartband = b'c'
-print(f"{flag_done}")
+
 # COLLECTED DATA ARRAYS
 smartband_data = []
 sensor_data = []
