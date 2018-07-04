@@ -275,10 +275,10 @@ void sendDataToPython(){
   char pythonFlag = Serial.read();  
   //Collect profile data
   if(pythonFlag == 'b'){ 
-    eepromMethod("get band", 1); delay(100);
-    Serial.println(smartbandData[index].CONTROL_ID); delay(100);
-    Serial.println(smartbandData[index].PROFILE_ID); delay(100);
-    Serial.println(smartbandData[index].misguidances); delay(100);
+    eepromMethod("get band", 0); delay(100);
+    Serial.println(smartbandData[0].CONTROL_ID); delay(100);
+    Serial.println(smartbandData[0].PROFILE_ID); delay(100);
+    Serial.println(smartbandData[0].misguidances); delay(100);
     Serial.println("\t"); }
   //Collect sensor data
   if(pythonFlag == 's'){
